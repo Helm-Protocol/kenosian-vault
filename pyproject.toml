@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kenosian-vault"
+version = "0.1.0"
+description = "Ask whether a mathematical claim passed the Lean 4 kernel — in one call, verifiable without our server."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Kenosian" }]
+keywords = ["lean4", "formal-verification", "theorem-prover", "reproducibility", "provenance"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+# ★의존성 0. 표준 라이브러리만 쓴다 — `pip install` 이 1초여야 하고,
+#   Lean 툴체인은 절대 번들하지 않는다(로컬 검증은 이미 깔린 lake 를 부른다).
+dependencies = []
+
+[project.urls]
+Homepage = "https://kpp.kenosian.com/scalar"
+Documentation = "https://kpp.kenosian.com/scalar"
+
+[tool.setuptools.packages.find]
+where = ["src"]
