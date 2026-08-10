@@ -1,0 +1,33 @@
+[package]
+name = "kvault"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+description = "Verify a Lean proof on your own machine, then seal only what passed."
+license = "Apache-2.0"
+repository = "https://github.com/Helm-Protocol/kenosian-vault"
+
+[[bin]]
+name = "kvault"
+path = "src/main.rs"
+
+[dependencies]
+# HTTP. ureq 는 블로킹이라 CLI 에 런타임(tokio)을 끌고 오지 않는다.
+ureq = { version = "3.4", default-features = false, features = ["rustls", "json"] }
+# 응답 스키마 파싱. 필드 이름 하나 틀리면 422 라서 스키마를 타입으로 박는다.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# 봉인 대상 다이제스트.
+sha2 = "0.10"
+# API 키가 로그·에러·Debug 에 실리지 않게 감싼다.
+secrecy = "0.10"
+# 실패마다 이름이 붙은 원인. 조용한 실패를 금지하는 자리.
+thiserror = "2"
+# 진단 로그(stderr). 사용자 결과 출력(stdout)과 섞지 않는다.
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
