@@ -16,7 +16,7 @@ import json
 import urllib.error
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 __all__ = ["Vault", "Certificate", "VaultError", "StaleVaultError"]
@@ -50,7 +50,17 @@ class Certificate:
     path: str | None
     claim: str | None
     quarantined: bool
-    commit: str
+    # 2026-08-10 (0.2.0). 서버는 이미 이 넷을 돌려주고 있었는데 클라이언트가 버리고
+    # 있었다. dir(c) 를 친 사람이 우리가 붙인 출처와 수식을 못 보면, 인용이 있어도
+    # 없는 것과 같다. 없으면 빈 값으로 둔다 — 지어내지 않는다.
+    statement: str | None = None
+    refs: list[str] = field(default_factory=list)
+    topics: list[str] = field(default_factory=list)
+    depends_on: list[str] = field(default_factory=list)
+    used_by: list[str] = field(default_factory=list)
+    compute: str | None = None
+    seal: dict[str, Any] | None = None
+    commit: str = ""
 
     @property
     def kernel_standard(self) -> bool:
@@ -68,6 +78,13 @@ class Certificate:
             path=d.get("path"),
             claim=d.get("claim"),
             quarantined=bool(d.get("quarantined", False)),
+            statement=d.get("statement"),
+            refs=list(d.get("refs") or []),
+            topics=list(d.get("topics") or []),
+            depends_on=list(d.get("depends_on") or []),
+            used_by=list(d.get("used_by") or []),
+            compute=d.get("compute"),
+            seal=d.get("seal"),
             commit=d.get("commit", ""),
         )
 

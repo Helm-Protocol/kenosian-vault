@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kenosian-vault"
-version = "0.1.0"
+version = "0.2.0"
 description = "Ask whether a mathematical claim passed the Lean 4 kernel — in one call, verifiable without our server."
 readme = "README.md"
 requires-python = ">=3.10"
