@@ -1,0 +1,41 @@
+{
+  "name": "@kenosian/vault",
+  "version": "0.1.0",
+  "description": "Ask whether a mathematical claim passed the Lean 4 kernel — in one call, verifiable without our server.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "keywords": [
+    "lean4",
+    "formal-verification",
+    "theorem-prover",
+    "reproducibility",
+    "provenance"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Helm-Protocol/kenosian-vault"
+  },
+  "homepage": "https://kpp.kenosian.com/scalar",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}

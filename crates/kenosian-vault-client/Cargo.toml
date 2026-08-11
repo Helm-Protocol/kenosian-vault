@@ -1,0 +1,30 @@
+[package]
+name = "kenosian-vault"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+description = "Ask whether a mathematical claim passed the Lean 4 kernel — in one call, verifiable without our server."
+license = "Apache-2.0"
+repository = "https://github.com/Helm-Protocol/kenosian-vault"
+readme = "README.md"
+keywords = ["lean4", "formal-verification", "http-client", "kenosian"]
+categories = ["api-bindings", "science"]
+
+[lib]
+name = "kenosian_vault"
+path = "src/lib.rs"
+
+[dependencies]
+# HTTP. ureq 는 블로킹이라 이 크레이트가 tokio 런타임을 강제로 끌고 오지 않는다
+# (crates/kvault 의 CLI 와 동일한 선택 — 생태계 일관성).
+ureq = { version = "3.4", default-features = false, features = ["rustls", "json"] }
+# 응답 스키마 파싱.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# 실패마다 이름이 붙은 원인. 조용한 실패를 금지하는 자리.
+thiserror = "2"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

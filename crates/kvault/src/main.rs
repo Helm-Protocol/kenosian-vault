@@ -11,6 +11,7 @@ use std::time::Duration;
 
 use kvault::check::{self, CheckError, CheckReport};
 use kvault::creds;
+use kvault::publish;
 use kvault::seal::{self, Anchorer, HttpAnchorer, ReceiptFile, SealError};
 
 const USAGE: &str = "\
@@ -23,6 +24,8 @@ kvault — Lean 증명을 자기 기계에서 검증하고, 통과분만 봉인�
 
   check   ① 로컬 커널 검증만. 서버를 부르지 않는다.
   submit  ① → ② 연속. kernel-standard 로 통과한 것만 봉인한다.
+          --publish 를 주면 ③ 까지 — 봉인된 그 바이트를 저장소에 PR 로 올린다.
+          ★서버는 ③ 에서도 Lean 을 돌리지 않는다. 해시 대조뿐이고, 병합은 사람이 한다.
   login   키 발급(승인 없음, 무료 1,000 seal). ~/.config/kenosian/credentials 에 0600 으로 저장.
 
 옵션
@@ -31,12 +34,16 @@ kvault — Lean 증명을 자기 기계에서 검증하고, 통과분만 봉인�
   --http-timeout <초>    서버 응답 상한 (기본 30)
   --external-ref <문자열> 영수증을 나중에 찾기 위한 내 쪽 식별자 (submit)
   --require-chain-time   Roughtime 체인 시각이 아니면 봉인을 거절시킨다 (submit)
+  --publish              ③ 등재까지 간다 (submit)
+  --path <저장소경로>     등재 위치. 생략하면 파일 경로의 `KLean/` 부터를 쓴다 (--publish)
+  --note <한 줄>          PR 본문에 남길 검토자용 한 줄 (--publish)
   --base-url <URL>       기본 https://kpp.kenosian.com
   --json                 판정을 JSON 한 덩어리로 stdout 에 낸다
   -h, --help / -V, --version
 
 종료코드
   0 성공 · 1 검증 실패 · 2 봉인 실패(①검증은 그대로 유효) · 3 사용법/설정 오류
+  4 등재 실패(①검증·②봉인은 그대로 유효)
 
 로그
   진단은 stderr 로 나간다. KVAULT_LOG=debug 로 자세히 볼 수 있다.
@@ -52,6 +59,9 @@ struct Opts {
     require_chain_time: bool,
     base_url: Option<String>,
     json: bool,
+    publish: bool,
+    path: Option<String>,
+    note: Option<String>,
 }
 
 fn main() -> ExitCode {
@@ -137,6 +147,9 @@ fn parse_args(args: &[String]) -> Result<(Vec<String>, Opts), String> {
             "--use-case" => o.use_case = Some(need("--use-case", &mut i)?),
             "--base-url" => o.base_url = Some(need("--base-url", &mut i)?),
             "--require-chain-time" => o.require_chain_time = true,
+            "--publish" => o.publish = true,
+            "--path" => o.path = Some(need("--path", &mut i)?),
+            "--note" => o.note = Some(need("--note", &mut i)?),
             "--json" => o.json = true,
             other if other.starts_with('-') => return Err(format!("모르는 옵션 '{other}'")),
             other => pos.push(other.to_string()),
@@ -305,6 +318,24 @@ fn cmd_submit(pos: &[String], o: &Opts) -> ExitCode {
     };
     let timeout = Duration::from_secs(o.timeout.unwrap_or(600));
 
+    // ★등재 경로는 봉인보다 먼저 정한다. 봉인은 quota 를 깎으므로, 어차피 올리지 못할
+    //   것을 봉인해 놓고 마지막에 "경로를 모르겠다" 고 말하면 사용자가 seal 을 잃는다.
+    let repo_rel = if o.publish {
+        match o.path.clone().or_else(|| publish::repo_path(&file)) {
+            Some(p) => Some(p),
+            None => {
+                eprintln!(
+                    "kvault: [publish_path_undetermined] 저장소 안에서의 경로를 정할 수 없다 — {}\n  \
+                     경로에 `KLean/` 이 없다. `--path KLean/...` 로 직접 지정해라.",
+                    file.display()
+                );
+                return ExitCode::from(3);
+            }
+        }
+    } else {
+        None
+    };
+
     // ① 검증. 여기서 막히면 서버를 부르지 않는다.
     let report = match check::check(&file, o.project.as_deref(), timeout) {
         Ok(r) => r,
@@ -325,12 +356,19 @@ fn cmd_submit(pos: &[String], o: &Opts) -> ExitCode {
     };
     let url = base_url(o);
     let http_timeout = Duration::from_secs(o.http_timeout.unwrap_or(30));
-    let anchorer = HttpAnchorer::new(&url, key, http_timeout);
+    let anchorer = HttpAnchorer::new(&url, key.clone(), http_timeout);
 
-    submit_with(&report, &anchorer, o)
+    submit_with(&report, &anchorer, o, repo_rel.map(|p| (p, key, url, http_timeout)))
 }
 
-fn submit_with(report: &CheckReport, anchorer: &dyn Anchorer, o: &Opts) -> ExitCode {
+type PublishCtx = (String, secrecy::SecretString, String, Duration);
+
+fn submit_with(
+    report: &CheckReport,
+    anchorer: &dyn Anchorer,
+    o: &Opts,
+    publish_ctx: Option<PublishCtx>,
+) -> ExitCode {
     let theorem_id = report.theorems.first().cloned();
     let sealed = seal::seal_file(
         &report.path,
@@ -382,7 +420,12 @@ fn submit_with(report: &CheckReport, anchorer: &dyn Anchorer, o: &Opts) -> ExitC
             if written.is_err() {
                 return ExitCode::from(2);
             }
-            ExitCode::SUCCESS
+            match publish_ctx {
+                None => ExitCode::SUCCESS,
+                Some((repo_rel, key, url, http_timeout)) => publish_step(
+                    report, &s, &repo_rel, &key, &url, http_timeout, o,
+                ),
+            }
         }
         Err(e) => {
             // ★해시가 바뀐 경우: 영수증은 이미 발급됐고 seal 도 차감됐다.
@@ -406,6 +449,88 @@ fn submit_with(report: &CheckReport, anchorer: &dyn Anchorer, o: &Opts) -> ExitC
                 }
             }
             seal_failed(report, &e, o.json)
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────── publish (③)
+
+/// ③ 등재. ★봉인이 성공한 뒤에만 불린다 — 봉인되지 않은 것은 올릴 수 없다.
+///
+/// 여기서 파일을 다시 읽어 해시를 한 번 더 센다. 봉인 때의 재계산과 겹쳐 보이지만,
+/// 봉인과 등재 사이에도 시간이 흐르고 그 사이에 파일이 바뀔 수 있다. 대조를 파는
+/// 물건이라면 대조가 성립하는 순간을 매번 다시 확인해야 한다.
+fn publish_step(
+    report: &CheckReport,
+    sealed: &seal::Sealed,
+    repo_rel: &str,
+    key: &secrecy::SecretString,
+    base: &str,
+    timeout: Duration,
+    o: &Opts,
+) -> ExitCode {
+    let result = publish::publish(
+        &report.path,
+        repo_rel,
+        &sealed.response.receipt_id,
+        &sealed.content_hash,
+        Some(report.axiom_level),
+        o.note.as_deref(),
+        base,
+        key,
+        timeout,
+    );
+
+    match result {
+        Ok(r) => {
+            if o.json {
+                let v = serde_json::json!({
+                    "ok": true,
+                    "stage": "publish",
+                    "pr_url": r.pr_url,
+                    "branch": r.branch,
+                    "path": r.path,
+                    "content_hash": r.content_hash,
+                    "receipt_id": r.receipt_id,
+                    "sealed_at": r.sealed_at,
+                    "message": r.message,
+                });
+                println!("{v}");
+            } else {
+                println!();
+                println!("PUBLISHED");
+                println!("  pr           {}", r.pr_url);
+                println!("  branch       {}", r.branch);
+                println!("  path         {}", r.path);
+                println!("  content_hash {}", r.content_hash);
+                println!("  ★병합은 사람이 한다. 서버는 해시만 대조했고 Lean 은 돌리지 않았다.");
+            }
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            if o.json {
+                let v = serde_json::json!({
+                    "ok": false,
+                    "stage": "publish",
+                    "error": e.name(),
+                    "message": e.to_string(),
+                    "receipt_id": sealed.response.receipt_id,
+                    "content_hash": sealed.content_hash,
+                    "note": "①검증과 ②봉인은 끝났다. 영수증은 그대로 유효하다.",
+                });
+                println!("{v}");
+            } else {
+                println!();
+                println!("PUBLISH FAILED  [{}]", e.name());
+                for line in e.to_string().lines() {
+                    println!("  {line}");
+                }
+                println!(
+                    "  ★①검증과 ②봉인은 끝났다 — 영수증 {} 은 그대로 유효하다.",
+                    sealed.response.receipt_id
+                );
+            }
+            ExitCode::from(4)
         }
     }
 }

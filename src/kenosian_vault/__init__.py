@@ -20,7 +20,7 @@
 from .client import Certificate, StaleVaultError, Vault, VaultError
 from .local import STANDARD_AXIOMS, CheckResult, check
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __all__ = [
     "Vault", "Certificate", "VaultError", "StaleVaultError",
     "check", "CheckResult", "STANDARD_AXIOMS",

@@ -133,6 +133,15 @@ class Vault:
         body, _ = self._get(f"/v1/klv/theorem/{urllib.parse.quote(fqn, safe='')}")
         return Certificate.from_json(body)
 
+    def verify(self, fqn: str) -> Certificate:
+        """`theorem()`의 별칭. ⛔이름이 실시간 검증처럼 들리지만 그렇지 않다 —
+        이 호출도 HTTP GET 하나뿐이다. 커널은 CI에서 이미 돌았고, 여기서는
+        그 판정을 O(1)로 조회할 뿐이다(2코어 서버에서 요청마다 커널을 돌리는
+        설계는 8/9에 DoS·5.15초 지연 이유로 기각됨). 호출부에서 "검증한다"는
+        직관적인 이름을 쓰고 싶을 때 이걸 부른다.
+        """
+        return self.theorem(fqn)
+
     def stats(self) -> dict[str, Any]:
         """금고 집계와 서빙 커밋."""
         body, _ = self._get("/v1/klv/stats")

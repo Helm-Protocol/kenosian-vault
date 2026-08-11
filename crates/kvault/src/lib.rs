@@ -6,11 +6,14 @@
 //!
 //! - `check`  — ① 로컬 커널 검증. 서버를 부르지 않는다.
 //! - `submit` — ① → ② 연속. kernel-standard 통과분만 봉인한다.
+//! - `submit --publish` — ① → ② → ③. 봉인된 그 바이트를 저장소에 PR 로 올린다.
+//!   ★③ 에서도 서버는 Lean 을 돌리지 않는다. 해시 대조뿐이고, 병합은 사람이 한다.
 //! - `login`  — 키 발급(승인 없음, 무료 1,000 seal).
 
 pub mod check;
 pub mod comments;
 pub mod creds;
+pub mod publish;
 pub mod seal;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
