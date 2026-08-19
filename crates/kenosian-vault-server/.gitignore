@@ -1,0 +1,6 @@
+target/
+Cargo.lock
+.claude/
+logs/
+*.bak
+*.bak-*

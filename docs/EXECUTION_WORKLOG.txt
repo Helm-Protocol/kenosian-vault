@@ -1,0 +1,5 @@
+=== 2026-08-19T15:12:00Z ===
+files: crates/kenosian-vault-server/{Cargo.toml, src/*, .gitignore, README-phase1.md} (13 files, rescue from stash@{0})
+console: (odysseus vault-restore-build) [odysseus] EXIT 0. rust 초록으로 포박됐다 · binary mtime 15:07:39 UTC 3103216 bytes
+verification: curl 127.0.0.1:8099/health = 200 · /metrics = 200 (Prometheus text) · /v1/metrics/summary = 200 {"commit":"unset","coverage_pct":0,"ingested":0,"sealed":0,"skipped":0}
+===
