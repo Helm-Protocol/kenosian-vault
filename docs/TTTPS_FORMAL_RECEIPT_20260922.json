@@ -7,10 +7,13 @@
   "verify_url": "https://kpp.kenosian.com/v1/verify?receipt_id=33108706ed730e5296ae1b06",
   "time_source": "roughtime_chain",
   "remote_verification": "verified",
-  "catalog_status": "pending_pr_merge",
-  "catalog_lookup": "KLean.TTTPS.invalid_ingress_no_mutation returned HTTP 404",
-  "publish_status": "direct_pr_open",
-  "publish_detail": "KVault deployed submit route returned HTTP 404; direct K-Lean PR opened as the established repository path.",
+  "catalog_status": "pending_catalog_reindex",
+  "catalog_lookup": "KLean.TTTPS.invalid_ingress_no_mutation returned HTTP 404 after K-Lean PR #4 merge; deployed Vault catalog has not reindexed.",
+  "publish_status": "kvault_bridge_pr_open",
+  "publish_detail": "KVault bridge uploaded in PR #1; K-Lean theorem source was merged in PR #4; public catalog reindex remains pending.",
   "direct_pr_url": "https://github.com/Helm-Protocol/kenosian-lean4/pull/4",
-  "direct_pr_commit": "7cb8b5555cfb58d7ef86e6237713318ea9990d5d"
+  "direct_pr_commit": "7cb8b5555cfb58d7ef86e6237713318ea9990d5d",
+  "direct_pr_status": "merged",
+  "direct_pr_merge_commit": "3ac82450afa87d0a9af6e36465e12b41715dba17",
+  "kvault_bridge_pr_url": "https://github.com/Helm-Protocol/kenosian-vault/pull/1"
 }

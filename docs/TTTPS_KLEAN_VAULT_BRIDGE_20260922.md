@@ -60,8 +60,8 @@ receipt verification endpoint returned `verified: true` with
 The deployed service currently returns HTTP 404 for the publish route
 `POST /v1/klv/submit`. The established repository path is now open as PR
 [kenosian-lean4#4](https://github.com/Helm-Protocol/kenosian-lean4/pull/4);
-its CI and merge are still pending, so the theorem is not yet in the public
-theorem catalog. This is recorded in `TTTPS_FORMAL_RECEIPT_20260922.json`;
+K-Lean PR #4 has since merged, but the deployed Vault catalog still returns HTTP 404
+until its catalog index is rebuilt and deployed. This is recorded in `TTTPS_FORMAL_RECEIPT_20260922.json`;
 it is not treated as catalog completion.
 
 The Rust implementation must be tested independently for bounds safety,
