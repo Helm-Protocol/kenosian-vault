@@ -93,9 +93,12 @@ run_once() {
   echo "KPP_REINDEX: configured command"
   bash -lc "$KPP_REINDEX_CMD"
 
+  if ! check_catalog; then
+    echo "HOLD: public catalog verification did not pass; state not advanced" >&2
+    return 2
+  fi
   jq -n --arg repo "$REPO" --argjson pr "$PR_NUMBER" --arg sha "$sha" \
-    '{repo:$repo,pr:$pr,merge_sha:$sha,status:"reindex_requested"}' >"$STATE_FILE"
-  check_catalog
+    '{repo:$repo,pr:$pr,merge_sha:$sha,status:"reindex_verified"}' >"$STATE_FILE"
 }
 
 if [[ "$MODE" == once ]]; then
