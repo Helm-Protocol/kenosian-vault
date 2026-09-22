@@ -14,6 +14,9 @@ STATE_FILE="${TTTPS_PROMOTE_STATE:-${XDG_STATE_HOME:-$HOME/.local/state}/kenosia
 MODE="once"
 DRY_RUN=0
 INTERVAL="${TTTPS_PROMOTE_INTERVAL:-60}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KLEAN_CATALOG_CMD="${KLEAN_CATALOG_CMD:-$SCRIPT_DIR/tttps-klean-remote-build.sh}"
+KPP_REINDEX_CMD="${KPP_REINDEX_CMD:-$SCRIPT_DIR/tttps-kpp-remote-reindex.sh}"
 
 usage() {
   cat <<'EOF'
@@ -83,17 +86,10 @@ run_once() {
   echo "LEAN_CHECK: $KLEAN_FILE"
   (cd "$KLEAN_DIR" && lake env lean "$KLEAN_FILE")
 
-  if [[ -z "${KLEAN_CATALOG_CMD:-}" ]]; then
-    echo "HOLD: KLEAN_CATALOG_CMD is not configured; no catalog builder was found"
-    return 2
-  fi
+  export TTTPS_EXPECTED_MERGE_SHA="$sha"
   echo "CATALOG_BUILD: configured command"
   bash -lc "$KLEAN_CATALOG_CMD"
 
-  if [[ -z "${KPP_REINDEX_CMD:-}" ]]; then
-    echo "HOLD: KPP_REINDEX_CMD is not configured; no public deploy target was found"
-    return 2
-  fi
   echo "KPP_REINDEX: configured command"
   bash -lc "$KPP_REINDEX_CMD"
 
