@@ -15,6 +15,7 @@ test \"\$(git rev-parse origin/main)\" = '$MERGE_SHA'
 test -z \"\$(git status --porcelain | grep -v '^?? ' || true)\"
 git switch --detach origin/main
 export PATH=/home/axcpeter/.elan/bin:\\$PATH
-lake build KLean.TTTPS.Core
-test -n \"\$(find .lake/build -type f -path '*KLean/TTTPS/Core.olean' -print -quit)\"
+mkdir -p .lake/build/lib/KLean/TTTPS
+lake env lean -o .lake/build/lib/KLean/TTTPS/Core.olean KLean/TTTPS/Core.lean
+test -s .lake/build/lib/KLean/TTTPS/Core.olean
 echo REMOTE_LEAN_BUILD_PASS merge_sha=$MERGE_SHA"
