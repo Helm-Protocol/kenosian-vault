@@ -1,0 +1,20 @@
+{
+  "record": "tttps-ingress-gate-20260922",
+  "lean_source": {
+    "path": "/home/axcpeter/kenosian-lean4/KLean/TTTPS/Core.lean",
+    "sha256": "6116b82318d540a1e4e5b694e31978739851f658356330349b9d4289aeb5bae8"
+  },
+  "tla_source": {
+    "path": "/home/axcpeter/kenosian-repo/docs/ietf/formal/TTTPS_Ingress_Gate.tla",
+    "sha256": "e071cb6e76fc7accb7aa8410acd8f6a756a177ee24218014129e6fd851bf7e26"
+  },
+  "tlc_config": {
+    "path": "/home/axcpeter/kenosian-repo/docs/ietf/formal/TTTPS_Ingress_Gate.cfg",
+    "sha256": "75415163574dbe94e78158f4524cae7671de35cae26a4dc9cbe6556ea5b2a29e"
+  },
+  "evidence_record": {
+    "path": "/home/axcpeter/kenosian-repo/docs/ietf/formal/TTTPS_FORMAL_EVIDENCE_20260922.md",
+    "sha256": "ba77dfdd4f47e7c06a3b13e1fff315b333a299e7c4c43636336de870719038d9"
+  },
+  "scope": "Lean parser and gate model plus bounded TLC ingress state model; cryptographic predicates are abstract inputs."
+}

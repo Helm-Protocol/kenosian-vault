@@ -13,7 +13,9 @@
 pub mod check;
 pub mod comments;
 pub mod creds;
+pub mod formal_evidence;
 pub mod publish;
 pub mod seal;
+pub mod tttps_bridge;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

@@ -1,0 +1,16 @@
+{
+  "record": "tttps-ingress-gate-20260922",
+  "binding_manifest_sha256": "0bfadc1791f60c34183238ba934b8304015d403a1dbeefb6a7687436fda3627a",
+  "lean_content_sha256": "6116b82318d540a1e4e5b694e31978739851f658356330349b9d4289aeb5bae8",
+  "receipt_id": "33108706ed730e5296ae1b06",
+  "receipt_sha256": "3f1cd0467c7b18b5dd518cf944df411ed215bc44795d057f3672437637d8cc6b",
+  "verify_url": "https://kpp.kenosian.com/v1/verify?receipt_id=33108706ed730e5296ae1b06",
+  "time_source": "roughtime_chain",
+  "remote_verification": "verified",
+  "catalog_status": "pending_pr_merge",
+  "catalog_lookup": "KLean.TTTPS.invalid_ingress_no_mutation returned HTTP 404",
+  "publish_status": "direct_pr_open",
+  "publish_detail": "KVault deployed submit route returned HTTP 404; direct K-Lean PR opened as the established repository path.",
+  "direct_pr_url": "https://github.com/Helm-Protocol/kenosian-lean4/pull/4",
+  "direct_pr_commit": "7cb8b5555cfb58d7ef86e6237713318ea9990d5d"
+}
