@@ -1,0 +1,43 @@
+# Isolated workspace root so cargo does not walk up to /home/axcpeter/Cargo.toml
+# (the polluted helm-gateway package with non-existent bin paths that fails
+# target resolution). Added after the 2026-08-19 ghost-build incident.
+[workspace]
+
+[package]
+name = "kenosian-vault-server"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+description = "Kenosian Vault standalone backend — O(1) formal AST router serving OmniVault RLVR gold theorems over HTTP."
+license = "Apache-2.0"
+repository = "https://github.com/Helm-Protocol/kenosian-vault"
+
+[[bin]]
+name = "kenosian-vault-server"
+path = "src/main.rs"
+
+[dependencies]
+axum = { version = "0.7", features = ["macros"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal", "fs", "io-util"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["trace", "compression-gzip"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hashbrown = { version = "0.15", features = ["serde"] }
+ahash = "0.8"
+thiserror = "2"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+sha2 = "0.10"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+hex = "0.4"
+blake3 = "1"
+prometheus = { version = "0.13", default-features = false, features = ["process"] }
+redis = { version = "0.27", default-features = false, features = ["tokio-comp", "connection-manager"] }
+once_cell = "1"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
