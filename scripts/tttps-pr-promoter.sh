@@ -46,7 +46,7 @@ mkdir -p "$(dirname "$STATE_FILE")"
 check_catalog() {
   local fqn="KLean.TTTPS.invalid_ingress_no_mutation" code
   code="$(curl --max-time 12 -sS -o /tmp/tttps-pr-promoter-catalog.json -w '%{http_code}' "$KPP_BASE/v1/klv/theorem/$fqn" || true)"
-  if [[ "$code" == 200 ]] && rg -q '"verified"[[:space:]]*:[[:space:]]*true' /tmp/tttps-pr-promoter-catalog.json; then
+  if [[ "$code" == 200 ]] && grep -Eq '"verified"[[:space:]]*:[[:space:]]*true' /tmp/tttps-pr-promoter-catalog.json; then
     echo "CATALOG_PASS fqn=$fqn"
     return 0
   fi
